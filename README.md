@@ -166,6 +166,17 @@ Sets the charset used for client-server interaction (`"SET NAMES <value>"`). If 
 Usage of the `charset` parameter is discouraged because it issues additional queries to the server.
 Unless you need the fallback behavior, please use `collation` instead.
 
+##### `checkConnLiveness`
+
+```
+Type:           bool
+Valid Values:   true, false
+Default:        true
+```
+
+On supported platforms connections retrieved from the connection pool are checked for liveness before using them. If the check fails, the respective connection is marked as bad and the query retried with another connection.
+`checkConnLiveness=false` disables this liveness check of connections.
+
 ##### `collation`
 
 ```
@@ -452,13 +463,13 @@ Alternatively you can use the [`NullTime`](https://godoc.org/github.com/go-sql-d
 
 
 ### Unicode support
-Since version 1.1 Go-MySQL-Driver automatically uses the collation `utf8_general_ci` by default.
+Since version 1.5 Go-MySQL-Driver automatically uses the collation ` utf8mb4_general_ci` by default.
 
 Other collations / charsets can be set using the [`collation`](#collation) DSN parameter.
 
 Version 1.0 of the driver recommended adding `&charset=utf8` (alias for `SET NAMES utf8`) to the DSN to enable proper UTF-8 support. This is not necessary anymore. The [`collation`](#collation) parameter should be preferred to set another collation / charset than the default.
 
-See http://dev.mysql.com/doc/refman/5.7/en/charset-unicode.html for more details on MySQL's Unicode support.
+See http://dev.mysql.com/doc/refman/8.0/en/charset-unicode.html for more details on MySQL's Unicode support.
 
 ## Testing / Development
 To run the driver tests you may need to adjust the configuration. See the [Testing Wiki-Page](https://github.com/go-sql-driver/mysql/wiki/Testing "Testing") for details.
