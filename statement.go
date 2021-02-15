@@ -44,6 +44,11 @@ func (stmt *mysqlStmt) ColumnConverter(idx int) driver.ValueConverter {
 	return converter{}
 }
 
+func (stmt *mysqlStmt) CheckNamedValue(nv *driver.NamedValue) (err error) {
+	nv.Value, err = converter{}.ConvertValue(nv.Value)
+	return
+}
+
 func (stmt *mysqlStmt) Exec(args []driver.Value) (driver.Result, error) {
 	if stmt.mc.closed.IsSet() {
 		errLog.Print(ErrInvalidConn)
@@ -149,10 +154,16 @@ func (c converter) ConvertValue(v interface{}) (driver.Value, error) {
 		if err != nil {
 			return nil, err
 		}
-		if !driver.IsValue(sv) {
-			return nil, fmt.Errorf("non-Value type %T returned from Value", sv)
+		if driver.IsValue(sv) {
+			return sv, nil
 		}
-		return sv, nil
+		// A value returend from the Valuer interface can be "a type handled by
+		// a database driver's NamedValueChecker interface" so we should accept
+		// uint64 here as well.
+		if u, ok := sv.(uint64); ok {
+			return u, nil
+		}
+		return nil, fmt.Errorf("non-Value type %T returned from Value", sv)
 	}
 	rv := reflect.ValueOf(v)
 	switch rv.Kind() {
